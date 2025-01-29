@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+# Unignore all with extensions
+*
+!/**/
+!*.*
