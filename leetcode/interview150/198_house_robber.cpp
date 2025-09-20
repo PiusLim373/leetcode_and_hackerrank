@@ -1,7 +1,23 @@
 #include <vector>
 #include <algorithm>
+int rob(std::vector<int> &nums)
+{
+  if (!nums.size())
+    return 0;
+  if (nums.size() == 1)
+    return nums[0];
+  std::vector<int> gain(nums.size());
+  gain[0] = nums[0];
+  gain[1] = std::max(nums[0], nums[1]);
 
-int rob(std::vector<int>& nums)
+  for (int i = 2; i < nums.size(); i++)
+  {
+    gain[i] = std::max(gain[i - 1], gain[i - 2] + nums[i]);
+  }
+  return gain[nums.size() - 1];
+}
+
+int rob_old(std::vector<int> &nums)
 {
   if (!nums.size())
     return 0;
@@ -21,8 +37,8 @@ int rob(std::vector<int>& nums)
 }
 int main()
 {
-//   std::vector<int> nums = { 1, 2, 3, 1 };
-  std::vector<int> nums = { 100, 2, 3, 300, 300, 300 };
+  //   std::vector<int> nums = { 1, 2, 3, 1 };
+  std::vector<int> nums = {100, 2, 3, 300, 300, 300};
   int ans = rob(nums);
   return 0;
 }
