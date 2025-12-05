@@ -1,50 +1,108 @@
+#include <unordered_map>
 #include <map>
 #include <vector>
 #include <string>
-
-std::vector<int> findSubstring(std::string s, std::vector<std::string>& words)
+#include <iostream>
+std::vector<int> findSubstring(std::string s, std::vector<std::string> &words)
 {
-  std::map<std::string, int> words_map;
-  for (auto x : words)
-    words_map[x]++;
+  std::vector<int> ans;
+  if (!s.size() || !words.size())
+    return ans;
 
-  std::map<std::string, int> fre_map;
-  std::vector<int> ans = {};
-
-  int n = words.size();
   int word_size = words[0].size();
-  int window_size = word_size * words.size();
-  for (int start_pos = 0; start_pos < word_size; ++start_pos)
+  if (s.size() < word_size * words.size())
+    return {};
+
+  std::unordered_map<std::string, int> m;
+  for (auto w : words)
+    m[w]++;
+
+  for (int offset = 0; offset < word_size; offset++)
   {
-    int start = start_pos;
-    do
+    std::unordered_map<std::string, int> window;
+    int start = offset;
+    int match_count = 0;
+
+    for (int right = offset; right + word_size <= s.size(); right += word_size)
     {
-      fre_map = words_map;
-      bool matched = true;
-      std::string temp_str;
-      for (int i = 0; i < n; ++i)
+      std::string curr_str = s.substr(right, word_size);
+      if (!m.count(curr_str))
       {
-        temp_str = s.substr(start + i * word_size, word_size);
-        if (!fre_map.count(temp_str) || fre_map[temp_str] == 0)
+        // not valid sub string
+        window.clear();
+        match_count = 0;
+        start = right + word_size;
+        continue;
+      }
+      match_count++;
+      window[curr_str]++;
+
+      while (window[curr_str] > m[curr_str])
+      {
+        std::string prev_str = s.substr(start, word_size);
+        match_count--;
+        window[prev_str]--;
+        start += word_size;
+      }
+      if (match_count == words.size())
+        ans.push_back(start);
+    }
+  }
+  return ans;
+}
+
+std::vector<int> findSubstringTLE(std::string s, std::vector<std::string> &words)
+{
+  std::unordered_map<std::string, int> m;
+  int total_word = words.size();
+  for (auto w : words)
+    m[w]++;
+
+  std::vector<int> ans;
+  int word_size = words[0].size();
+  if (s.size() < word_size)
+    return {};
+  for (int offset = 0; offset < word_size; offset++)
+  {
+    int start = offset;
+    // std::cout << "starting: " << s[left] << std::endl;
+    while (s.size() - start >= total_word * word_size)
+    {
+      std::unordered_map<std::string, int> curr_m = m;
+      bool success = true;
+      for (int i = 0; i < total_word; i++)
+      {
+        std::string curr_str = s.substr(start + i * word_size, word_size);
+        std::cout << "testing: " << curr_str << std::endl;
+        if (!curr_m.count(curr_str) || curr_m[curr_str] == 0)
         {
-          matched = false;
+          std::cout << curr_str << " failed!" << std::endl;
+          success = false;
           break;
         }
-        fre_map[temp_str]--;
+        curr_m[curr_str]--;
       }
-      if (matched)
+      if (success)
+      {
+        std::cout << "success! " << start << std::endl;
         ans.push_back(start);
+      }
       start += word_size;
-    } while (start + window_size - 1 < s.size());
+    }
   }
-
   return ans;
 }
 
 int main()
 {
-  std::string s = "barfoothefoobarman";
-  std::vector<std::string> words = { "foo", "bar" };
+  // std::string s = "barfoothefoobarman";
+  // std::vector<std::string> words = { "foo", "bar" };
+  // std::string s = "barfoofoobarthefoobarman";
+  // std::vector<std::string> words = {"bar", "foo", "the"};
+
+  std::string s = "wordgoodgoodgoodbestword";
+  std::vector<std::string> words = {"word", "good", "best", "good"};
+
   auto ans = findSubstring(s, words);
   return 0;
 }
